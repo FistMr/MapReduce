@@ -10,6 +10,8 @@ import java.util.*;
 
 public class Worker implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(Worker.class);
+    private final long TASK_TIMEOUT_MS = 30_000;
+    private long lastTaskReceivedTime = System.currentTimeMillis();
     private final Coordinator coordinator;
     private final MapFunction mapFunc;
     private final ReduceFunction reduceFunc;
@@ -26,8 +28,11 @@ public class Worker implements Runnable {
     public void run() {
         while (true) {
             Task task = coordinator.getTask();
-
             if (task == null) {
+                if (System.currentTimeMillis() - lastTaskReceivedTime > TASK_TIMEOUT_MS) {
+                    logger.error("Таймаут ожидания задач, завершаю работу");
+                    return;
+                }
                 try {
                     logger.debug("Нет доступных задач, ожидание");
                     Thread.sleep(100);
@@ -37,6 +42,7 @@ public class Worker implements Runnable {
                 }
                 continue;
             }
+            lastTaskReceivedTime = System.currentTimeMillis();
 
             if (task.type == Task.Type.NONE) {
                 logger.info("Получена команда на завершение работы");
@@ -70,6 +76,7 @@ public class Worker implements Runnable {
                     coordinator.completeTask(task);
                 } catch (IOException e) {
                     logger.error("Ошибка обработки MAP-задачи {}: {}", task.taskId, e.getMessage());
+                    coordinator.reportTaskFailure(task);
                 }
             } else if (task.type == Task.Type.REDUCE) {
                 try {
@@ -104,6 +111,7 @@ public class Worker implements Runnable {
                     coordinator.completeTask(task);
                 } catch (IOException e) {
                     logger.error("Ошибка обработки REDUCE-задачи {}: {}", task.taskId, e.getMessage());
+                    coordinator.reportTaskFailure(task);
                 }
             }
         }

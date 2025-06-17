@@ -51,6 +51,7 @@ public class MapReduce {
                 return;
             }
         }
+        logger.info("Все задачи успешно выполнены!");
 
         executor.shutdown();
         try {
