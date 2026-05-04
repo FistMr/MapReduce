@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WordCount {
+    private WordCount() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static class Mapper implements MapFunction {
         @Override
         public List<KeyValue> map(String fileName, String content) {

@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -18,13 +19,12 @@ public class MapReduce {
             return;
         }
 
-        List<String> inputFiles = new ArrayList<>();
         int numWorkers = Integer.parseInt(args[args.length - 2]);
         int numReduceTasks = Integer.parseInt(args[args.length - 1]);
 
-        for (int i = 0; i < args.length - 2; i++) {
-            inputFiles.add(args[i]);
-        }
+        List<String> inputFiles = new ArrayList<>(
+                Arrays.asList(args).subList(0, args.length - 2)
+        );
 
         logger.info("Запуск MapReduce с параметрами:");
         logger.info("Файлы: {}", inputFiles);
@@ -46,6 +46,7 @@ public class MapReduce {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
                 logger.warn("Главный поток был прерван, экстренное завершение");
                 executor.shutdownNow();
                 return;

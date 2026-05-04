@@ -10,7 +10,7 @@ import java.util.*;
 
 public class Worker implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(Worker.class);
-    private final long TASK_TIMEOUT_MS = 30_000;
+    private static final long TASK_TIMEOUT_MS = 30_000;
     private long lastTaskReceivedTime = System.currentTimeMillis();
     private final Coordinator coordinator;
     private final MapFunction mapFunc;
